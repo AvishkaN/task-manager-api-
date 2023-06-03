@@ -23,15 +23,39 @@ router.post("/users/login", async (req, res) => {
       req.body.email,
       req.body.password
     );
-    const token = await user.generateAuthToken();
 
-    console.log(token); // Output: John
+    const token = await user.generateAuthToken();
 
     res.send({ user, token });
   } catch (error) {
-    console.log("///////", error);
     // res.status = 400;
     res.send(error);
+  }
+});
+
+router.post("/users/logout", auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter(
+      (token) => token.token != req.token
+    );
+
+    await req.user.save();
+
+    res.send();
+  } catch (error) {
+    res.status(500).send();
+  }
+});
+
+router.post("/users/logoutAll", auth, async (req, res) => {
+  try {
+    req.user.tokens = [];
+
+    await req.user.save();
+
+    res.send();
+  } catch (error) {
+    res.status(500).send();
   }
 });
 
@@ -57,8 +81,6 @@ router.patch("/users/:id", async (req, res) => {
 
     updates.forEach((update) => (user[update] = req.body[update]));
     await user.save();
-
-    // console.log("111", user);
 
     if (!user) {
       res.status(400).send("cant find user by provided id");

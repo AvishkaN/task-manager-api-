@@ -49,6 +49,20 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
+/**
+ * hiding unnecessarily fields
+ * @returns
+ */
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userObj = user.toObject();
+
+  delete userObj.password;
+  delete userObj.tokens;
+
+  return userObj;
+};
+
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
 
@@ -73,9 +87,6 @@ userSchema.methods.generateAuthToken = async function () {
 // };
 
 userSchema.statics.findByCredentials = async (email, password) => {
-  console.log(1, email);
-  console.log(2, password);
-
   const user = await User.findOne({ email: email });
 
   if (!user) {
